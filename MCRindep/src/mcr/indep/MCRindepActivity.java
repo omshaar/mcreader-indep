@@ -83,8 +83,8 @@ public class MCRindepActivity extends Activity {
 	final Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
             int running = msg.getData().getInt("running");
-            if (running == 0) {
-            	preview.refresh();
+            if (running == 0) {		//The image processing thread is no longer running			
+            	preview.refresh();		//Refresh the preview the so user can take another pic
             }
         }
 
@@ -132,152 +132,6 @@ public class MCRindepActivity extends Activity {
 			//preview.refresh();
 		}
 	};
-	
-	public void onSendImageFile(byte [] data) throws FileNotFoundException, InterruptedException {
-    	Log.d(TAG,"onSendImageFile!");
-    	String fileName = "test.jpeg";
-    	//FileInputStream fileInputStream = new FileInputStream(new File(fileName));
-    	HttpURLConnection conn = null;
-        DataOutputStream dos = null;
-        DataInputStream inStream = null;
-        URLConnection URLconn = null;
-
-        String lineEnd = "\r\n";
-        String twoHyphens = "--";
-        String boundary = "*****";
-
-        String responseFromServer = "";
-
-        String urlString = "http://grark.xen.prgmr.com/uploadMCR.php";
-
-        Log.d(TAG,"starting file read");
-        // loop waiting sound while waiting for response from server
-        MediaPlayer mp = MediaPlayer.create(getBaseContext(), R.raw.blip);
-        mp.setLooping(true);
-		mp.start();
-        try
-        {
-        //------------------ CLIENT REQUEST
-        // open a URL connection to the Servlet
-        URL url = new URL(urlString);
-
-        // Open a HTTP connection to the URL
-        conn = (HttpURLConnection) url.openConnection();
-        Log.d("fileupload","Got connection");
-
-        // Allow Inputs
-        conn.setDoInput(true);
-
-        // Allow Outputs
-        conn.setDoOutput(true);
-
-        // Don't use a cached copy.
-        conn.setUseCaches(false);
-        
-        // Set connection timeout
-        conn.setConnectTimeout(120000); //set timeout
-        
-        conn.setReadTimeout(120000); //set timeout
-
-        // Use a post method.
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-        
-        dos = new DataOutputStream( conn.getOutputStream() );
-        dos.writeBytes(twoHyphens + boundary + lineEnd);
-        dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + fileName +"\"" + lineEnd);
-        dos.writeBytes(lineEnd);
-        Log.d("MediaPlayer","Headers are written");
-        Log.d(TAG, "DATA!!!");
-        //Log.d(TAG, "STRNG: " + new String(data));
-        //Log.d(TAG, "BYTES: " + data);
-        dos.write(data);
-
-        // send multipart form data necesssary after file data...
-        dos.writeBytes(lineEnd);
-        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
-        // close streams
-        Log.d(TAG,"File is written");
-        //fileInputStream.close();
-        dos.flush();
-        dos.close();
-
-/*        
-    	URLconn = url.openConnection();
-    	Log.d(TAG, "BEGIN CONNECTION!!!");
-    	URLconn.setDoOutput(true);
-        URLconn.setDoInput(true);
-        URLconn.setUseCaches(false);
-        URLconn.setAllowUserInteraction(false);
-        DataOutputStream dataOutStream =
-                new DataOutputStream(URLconn.getOutputStream());
-    	Log.d(TAG, "BEGIN WRITING!!!");
-        dataOutStream.writeBytes("");
-        dataOutStream.close(); 
-    	Log.d(TAG, "FINISH WRITING!!!");
-*/
-        }
-        catch (MalformedURLException ex)
-        {
-        	Log.e(TAG, "error: " + ex.getMessage(), ex);
-        }
-
-        catch (IOException ioe)
-        {
-        	Log.e(TAG, "error: " + ioe.getMessage(), ioe);
-        }
-
-
-        //------------------ read the SERVER RESPONSE
-        try {
-        	responseFromServer = "";
-        	Log.d(TAG, "BEGIN READING!!!");
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line;
-			// get response from server
-            line = rd.readLine();
-        	Log.d(TAG, line);
-        	while (line != null) {
-	            Log.d(TAG, "Message: " + line);
-	            //if (line.contains("value=")) {
-	            	Integer returnedNum = Integer.valueOf(line);
-	            
-	            	// play answer
-	            	playAudio(returnedNum.intValue());
-	            //}
-	            line = rd.readLine();
-        	}
-            rd.close();
-            /*
-            if (responseFromServer.length() > 0) {
-            	Log.d(TAG, "LENGTH OF RESPONSE IS " + responseFromServer.length());
-            	Log.d(TAG, "RESPONSE IS " + responseFromServer);
-            }
-            else
-            	Log.d(TAG, "DIDN'T GET RESPONSE ");
-            */
-        }
-        catch (NumberFormatException numberex) {
-        	Log.d(TAG, "bad output from server");
-        }
-        catch (SocketTimeoutException socketx) {
-        	playAudio(Constants.CONNECTION_FAILED);
-        	Log.d(TAG, "TIMEDOUT!!! could not connect to network");
-        }
-        catch (SocketException sockex) {
-        	playAudio(Constants.CONNECTION_FAILED);
-        	Log.d(TAG, "could not connect to network");
-        }
-        catch (IOException ioex){
-        	Log.d(TAG, "error: " + ioex.getMessage(), ioex);
-        }
-        
-        mp.setLooping(false);
-		mp.release();
-		conn.disconnect();
-    }
 	
 	private void playAudio(int type) {
 		try {
@@ -341,30 +195,51 @@ public class MCRindepActivity extends Activity {
 		}
 	}
 	
+    public native String  stringFromJNI();
+	public native int processCurrencyImage();
+	
 	private class ProgressThread extends Thread {
 		protected boolean inProgress;
-		private byte [] data;
+		private byte [] data;		//the actual image data
 		private Handler handler;
 		public ProgressThread(byte [] m_data, Handler m_handler) {
 			data = m_data;
 			handler = m_handler;
 		}
 		public void run() {
-			try {
-				Log.d(TAG, "START SENDING!!");
-				onSendImageFile(data);
-				Message msg = handler.obtainMessage();
-                Bundle b = new Bundle();
-                b.putInt("running", 0);
-                msg.setData(b);
-                handler.sendMessage(msg);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} finally {
-				inProgress = false;
-			}
+		
+			Log.d(TAG, "START IMAGE PROCESSING!!!");
+			int returnedNum;
+		        
+			// loop waiting sound while waiting for response from server
+		    MediaPlayer mp = MediaPlayer.create(getBaseContext(), R.raw.blip);
+		    mp.setLooping(true);
+			mp.start();
+				
+			// Start running image processing code
+			//returnedNum = processCurrencyImage();
+			returnedNum = processCurrencyImage();
+	
+			// Done running vision code
+		    mp.setLooping(false);
+		    mp.release();
+				
+            // play answer
+            playAudio(returnedNum);
+			
+            // Pass a message to the handler to let it know to restart the preview
+			Message msg = handler.obtainMessage();
+            Bundle b = new Bundle();
+            b.putInt("running", 0);
+            msg.setData(b);
+            handler.sendMessage(msg);
+                
+            inProgress = false;
 		}
 	}
+	
+    static {
+        System.loadLibrary("MCRindep");
+    }
+	
 }

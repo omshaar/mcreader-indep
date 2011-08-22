@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+//Implements the preview of the camera before you take the picture
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = "Preview";
 	public ProgressDialog dialog;
@@ -33,6 +34,19 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
     	dialog = ProgressDialog.show(this.getContext(), "Processing", "Please wait for image to process...", true);
     }
     
+    public void surfaceCreated(SurfaceHolder holder) {
+        // The Surface has been created, acquire the camera and tell it where
+        // to draw.
+    	Log.d("PREVIEW", "surface created");
+    	if (camera == null)
+    		camera = Camera.open();
+        try {
+			camera.setPreviewDisplay(holder);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
     public void refresh() {
     	if (camera != null) {
     		Camera.Parameters parameters = camera.getParameters();
@@ -51,29 +65,6 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	            camera.startPreview();
     		}
     	}
-    }
-
-    public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, acquire the camera and tell it where
-        // to draw.
-    	Log.d("PREVIEW", "surface created");
-    	if (camera == null)
-    		camera = Camera.open();
-        try {
-			camera.setPreviewDisplay(holder);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        // Surface will be destroyed when we return, so stop the preview.
-        // Because the CameraDevice object is not a shared resource, it's very
-        // important to release it when the activity is paused.
-    	Log.d("PREVIEW", "Surface destroyed");
-        camera.stopPreview();
-        camera.release();
-        camera = null;
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -101,6 +92,15 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         camera.startPreview();
     }
 
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // Surface will be destroyed when we return, so stop the preview.
+        // Because the CameraDevice object is not a shared resource, it's very
+        // important to release it when the activity is paused.
+    	Log.d("PREVIEW", "Surface destroyed");
+        camera.stopPreview();
+        camera.release();
+        camera = null;
+    }
     /*
     @Override
     public void draw(Canvas canvas) {
