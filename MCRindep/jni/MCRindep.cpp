@@ -8,6 +8,11 @@ using namespace std;
 #include "siftmatcher.h"
 #include "globals.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 
 string libFileNames[NUMTESTS] = { "lib00.txt", "lib01.txt", "lib02.txt", "lib03.txt", "lib04.txt", "lib05.txt", "lib06.txt", "lib07.txt", "lib08.txt", "lib09.txt", "lib10.txt", "lib11.txt" };
 string libPicNames[NUMTESTS] = { "lib00.ppm", "lib01.ppm", "lib02.ppm", "lib03.ppm", "lib04.ppm", "lib05.ppm", "lib06.ppm", "lib07.ppm", "lib08.ppm", "lib09.ppm", "lib10.ppm", "lib11.ppm" };
@@ -17,63 +22,53 @@ const string testImageDirectory = "TestImages\\";
 string findFirstName( string Filename );
 int matchIndexToBill( int index );
 
-jint
-Java_mcr_indep_MCRindep_processCurrencyImage( JNIEnv* env, jobject thiz )
+
+jstring
+Java_mcr_indep_MCRindepActivity_stringFromJNI( JNIEnv* env, jobject obj )
+{
+    return env->NewStringUTF("Hello from JNI !");
+}
+
+int
+Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
 {	
 	return 20;
-	int argc = 1;
-	///////////////////main/////////////////////////////
-	siftmatcher* matcher = new siftmatcher();
 
-	//Always generate the descriptor files - safe but very inneficient
+	///////////////////main/////////////////////////////
+	/*siftmatcher* matcher = new siftmatcher();
+
+	//Always generate the descriptor files - safe but very inefficient
 	//matcher->writeDescriptors(libPicNames);	
 
 	//Only build the forest once
-
 	matcher->buildForest(libFileNames);
 
-		//int runNumber = 0;
-		//for( runNumber; true; runNumber++ )
-		//{
-			/*string command = "dir " + testImageDirectory + "*.ppm /b > results.txt";		
-			system(command.c_str()); 
+	string testImage = "test.ppm";
 
-			string testImage = findFirstName( "results.txt" );
+	matcher->processTestImage( testImageDirectory + testImage );
 
-			//If there is not an image to process in the folder, then sleep for a second and then try again
-			if( testImage == "" )
-			{
-				command = "Sleep 1";
-				system(command.c_str());
-				continue;
-		}*/
-			string testImage = "test.ppm";
-
-			matcher->processTestImage( testImageDirectory + testImage );
-
-			int matches[NUMTESTS];
-			matcher->findMatches(matches);
-			int maxIndex = 0;
-			for( int i=1; i<NUMTESTS; i++)
-			{
-				if( matches[i] > matches[maxIndex] )
-				{
-					maxIndex = i;
-				}
-			}
-
-			string img = libPicNames[maxIndex];
-			cout<< "Found " << matches[maxIndex] << " between testImage: " 
-				<< testImage << " and libImage: " << img << endl;
+	int matches[NUMTESTS];
+	matcher->findMatches(matches);
+	int maxIndex = 0;
+	for( int i=1; i<NUMTESTS; i++)
+	{
+		if( matches[i] > matches[maxIndex] )
+		{
+			maxIndex = i;
+		}
+	}
+	string img = libPicNames[maxIndex];
+	cout<< "Found " << matches[maxIndex] << " between testImage: "
+		<< testImage << " and libImage: " << img << endl;
 				
-			//Remove the image we just processed
-			//command = "DEL " + testImageDirectory + testImage;		
-			//system(command.c_str()); 
-		//}
+		//Remove the image we just processed
+		//command = "DEL " + testImageDirectory + testImage;
+		//system(command.c_str());
+	//}
 
 	delete matcher;
 	int result = matchIndexToBill( maxIndex );
-	return result;
+	return result;*/
 }
 
 string findFirstName( string Filename )
@@ -118,6 +113,12 @@ int matchIndexToBill( int index )
 	}
 	return -1;
 }
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 /*
