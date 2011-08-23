@@ -28,6 +28,7 @@ import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
 import android.hardware.Camera.Size;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,7 +40,8 @@ import android.widget.FrameLayout;
 public class MCRindepActivity extends Activity {
 	private static final String TAG = "MCRActivity";
 	
-	Preview preview; // preview holds the camera
+	public Preview preview; // previews video display and also contains a camera object
+	private MediaPlayer myMediaPlayer;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -50,13 +52,16 @@ public class MCRindepActivity extends Activity {
 		// this R.id stuff is in the main.xml file
 		// create the surface that the camera preview is on
 		if (preview == null) {
+			
+			//????????????????????
 			preview = new Preview(this);
 			((FrameLayout) findViewById(R.id.preview)).addView(preview);
+			
 			preview.setOnClickListener( new OnClickListener() {
 				// takes picture when the screen is touched/clicked
 				public void onClick(View v) {
 					// set photo resolution as preparation for image processing
-					Camera.Parameters parameters = preview.camera.getParameters();
+					Camera.Parameters parameters = preview.mCamera.getParameters();
 					int width = 0;
 					int height = 0;
 					//should get 1024 by 768
@@ -71,10 +76,11 @@ public class MCRindepActivity extends Activity {
 								}
 							}
 							parameters.setPictureSize(width, height);
-							preview.camera.setParameters(parameters);
+							preview.mCamera.setParameters(parameters);
 						}
 					}
-					preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+					preview.mCamera.takePicture(shutterCallback, rawCallback, jpegCallback);
+					//preview.mCamera.takePicture(null, rawCallback, jpegCallback);
 				}
 			});
 		}
@@ -90,24 +96,43 @@ public class MCRindepActivity extends Activity {
 
 	};
 	
-	public void timeout() {
-		playAudio(Constants.CONNECTION_FAILED);
-    	//Log.d(TAG, "could not connect to network");
-	}
-	
 	@Override
 	public void onPause() {
 		super.onPause();
 		Log.d(TAG, "Going onPause!!!!!!!!!!!");
 		if( preview.dialog != null )
 			preview.dialog.dismiss();
-		this.finish();
+		
+		// Stop and release the camera
+		if( preview.mCamera != null ) {
+			preview.mCamera.stopPreview();
+			preview.mCamera.release();
+			preview.mCamera = null;
+		}
+		
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "Going onResume!!!!!!!!!!!");
+		
+		// Give the camera object back to the Preview class
+		if( preview.mCamera != null && preview.mHolder!= null) {
+	        preview.mCamera = Camera.open();
+	        try {
+	        	preview.mCamera.setPreviewDisplay(preview.mHolder);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	ShutterCallback shutterCallback = new ShutterCallback() {
 		public void onShutter() {
 			/* make shutter sound to signal that picture was taken */
-			playAudio(Constants.SHUTTER_SOUND);
+			//playAudio(Constants.SHUTTER_SOUND);
+			//playAudio(Constants.ONE_DOLLAR_SOUND);
 			preview.progressDialog();
 		}
 	};
@@ -133,70 +158,78 @@ public class MCRindepActivity extends Activity {
 		}
 	};
 	
+
+	
 	private void playAudio(int type) {
 		try {
-			MediaPlayer mp = null;
+			myMediaPlayer = null;
 			
 			switch (type) {
 			
 			// shutter sound plays after app takes a picture		
 			case Constants.SHUTTER_SOUND:
-				Log.i("Audio - grark", "playing camera shutter");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.shutter); 
-		        //mp.start();
+				Log.i("MCRAudioDevice", "playing camera shutter");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.shutter);
 				break;
 				
 			// error
 			case Constants.IMAGE_ERROR_SOUND:
-				Log.i("Audio - matt", "cannot process the image. please retake the picture");
-				mp = MediaPlayer.create(getBaseContext(), R.raw.imageerror); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "cannot process the image. please retake the picture");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.imageerror); 
 				break;
 			
 			case Constants.ONE_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing one dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.one); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing one dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.one); 
 				break;
 			case Constants.FIVE_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing five dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.five); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing five dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.five); 
 				break;
 			case Constants.TEN_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing ten dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.ten); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing ten dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.ten); 
 				break;
 			case Constants.TWENTY_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing twenty dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.twenty); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing twenty dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.twenty); 
 				break;
 			case Constants.FIFTY_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing fifty dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.fifty); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing fifty dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.fifty); 
 				break;
 			case Constants.ONE_HUNDRED_DOLLAR_SOUND:
-				Log.i("Audio - grark", "playing hundred dollar bill");
-		        mp = MediaPlayer.create(getBaseContext(), R.raw.hundred); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "playing hundred dollar bill");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.hundred); 
 				break;
 			case Constants.CONNECTION_FAILED:
-				Log.i("Audio - matt", "cannot connect to network");
-				mp = MediaPlayer.create(getBaseContext(), R.raw.errornetwork); 
-		        mp.start();
+				Log.i("MCRAudioDevice", "cannot connect to network");
+				myMediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.errornetwork); 
 		        break;
-			default:
+			default: 
+				
 			}
+			myMediaPlayer.setLooping(false);
+			myMediaPlayer.start();
+			myMediaPlayer.setOnCompletionListener(new OnCompletionListener(){
+				@Override
+				public void onCompletion( MediaPlayer mp ) {
+					if( myMediaPlayer != null ) {
+						myMediaPlayer.release();
+						Log.d("MCRAudioDevice", "Releasing the MediaPlayer object.");
+					}
+				}				
+			});
+			
 		}
 		catch (Exception ex) {
 		}
+		
 	}
 	
     public native String  stringFromJNI();
 	public native int processCurrencyImage();
+	public native int initializeCurrencyReader();
 	
 	private class ProgressThread extends Thread {
 		protected boolean inProgress;
@@ -214,13 +247,13 @@ public class MCRindepActivity extends Activity {
 			// loop waiting sound while waiting for response from server
 		    MediaPlayer mp = MediaPlayer.create(getBaseContext(), R.raw.blip);
 		    mp.setLooping(true);
-			mp.start();
+		    mp.start();
 				
 			// Start running image processing code
-			//returnedNum = processCurrencyImage();
-			returnedNum = processCurrencyImage();
+			returnedNum = initializeCurrencyReader();
 	
 			// Done running vision code
+		    mp.stop();
 		    mp.setLooping(false);
 		    mp.release();
 				
