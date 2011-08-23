@@ -1,9 +1,11 @@
 #include<string>
+#include <stdio.h>
 using namespace std;
 #include<iostream>
 #include<sstream>
 #include<fstream>
 #include<jni.h>
+#include<android/log.h>
 
 #include "siftmatcher.h"
 #include "globals.h"
@@ -13,11 +15,16 @@ extern "C"
 {
 #endif
 
+// Shorthand used for logging
+#define LOGGING_TAG    "MCR_JNI_LOG"
+#define LOG(...)  __android_log_print(ANDROID_LOG_INFO, LOGGING_TAG, __VA_ARGS__)
+
+siftmatcher* matcher;
 
 string libFileNames[NUMTESTS] = { "lib00.txt", "lib01.txt", "lib02.txt", "lib03.txt", "lib04.txt", "lib05.txt", "lib06.txt", "lib07.txt", "lib08.txt", "lib09.txt", "lib10.txt", "lib11.txt" };
 string libPicNames[NUMTESTS] = { "lib00.ppm", "lib01.ppm", "lib02.ppm", "lib03.ppm", "lib04.ppm", "lib05.ppm", "lib06.ppm", "lib07.ppm", "lib08.ppm", "lib09.ppm", "lib10.ppm", "lib11.ppm" };
 
-const string testImageDirectory = "TestImages\\";
+const string testImageDirectory = "res\\libImages\\";
 
 string findFirstName( string Filename );
 int matchIndexToBill( int index );
@@ -30,19 +37,24 @@ Java_mcr_indep_MCRindepActivity_stringFromJNI( JNIEnv* env, jobject obj )
 }
 
 int
-Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
+Java_mcr_indep_MCRindepActivity_initializeCurrencyReader( JNIEnv* env, jobject obj )
 {	
-	return 20;
-
-	///////////////////main/////////////////////////////
-	/*siftmatcher* matcher = new siftmatcher();
+	LOG("Initializing the currency reader.");
+	//matcher = new siftmatcher();
 
 	//Always generate the descriptor files - safe but very inefficient
 	//matcher->writeDescriptors(libPicNames);	
 
 	//Only build the forest once
-	matcher->buildForest(libFileNames);
+	//matcher->buildForest(libFileNames);
 
+	return 1;
+}
+
+int
+Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
+{
+	///////////////////main/////////////////////////////
 	string testImage = "test.ppm";
 
 	matcher->processTestImage( testImageDirectory + testImage );
@@ -61,14 +73,14 @@ Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
 	cout<< "Found " << matches[maxIndex] << " between testImage: "
 		<< testImage << " and libImage: " << img << endl;
 				
-		//Remove the image we just processed
-		//command = "DEL " + testImageDirectory + testImage;
-		//system(command.c_str());
-	//}
+	//Remove the image we just processed
+	//command = "DEL " + testImageDirectory + testImage;
+	//system(command.c_str());
+
 
 	delete matcher;
 	int result = matchIndexToBill( maxIndex );
-	return result;*/
+	return result;
 }
 
 string findFirstName( string Filename )
