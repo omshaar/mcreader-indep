@@ -61,7 +61,7 @@ extern "C" {
 	{
 		forest = vl_kdforest_new(DESCRIPTOR_DIMENSION, 1);
 		forest->thresholdingMethod = VL_KDTREE_MEDIAN;
-		processLibraryImages(libraryNames);
+		processLibraryImages(libraryNames);		//Reads inputs from the files in libraryNames into libraryDescriptors
 		vl_kdforest_build(forest, numLibraryDescriptors, libraryDescriptors);
 	}
 

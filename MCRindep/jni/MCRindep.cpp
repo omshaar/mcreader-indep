@@ -5,7 +5,7 @@ using namespace std;
 #include<sstream>
 #include<fstream>
 #include<jni.h>
-#include<android/log.h>
+
 
 #include "siftmatcher.h"
 #include "globals.h"
@@ -15,9 +15,14 @@ extern "C"
 {
 #endif
 
-// Shorthand used for logging
-#define LOGGING_TAG    "MCR_JNI_LOG"
-#define LOG(...)  __android_log_print(ANDROID_LOG_INFO, LOGGING_TAG, __VA_ARGS__)
+// Macros defined for easy debugging/printing
+#include<android/log.h>
+#define LOGGING_TAG    "MCR_JNI_DEBUGGING"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOGGING_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOGGING_TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOGGING_TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOGGING_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOGGING_TAG, __VA_ARGS__)
 
 siftmatcher* matcher;
 
@@ -39,7 +44,7 @@ Java_mcr_indep_MCRindepActivity_stringFromJNI( JNIEnv* env, jobject obj )
 int
 Java_mcr_indep_MCRindepActivity_initializeCurrencyReader( JNIEnv* env, jobject obj )
 {	
-	LOG("Initializing the currency reader.");
+	LOGD("Initializing the currency reader.");
 	//matcher = new siftmatcher();
 
 	//Always generate the descriptor files - safe but very inefficient

@@ -19,6 +19,10 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := MCRindep
 LOCAL_SRC_FILES := MCRindep.cpp DisplayMatcher.cpp generic.c heap.c host.c Image.cpp imop.c kdtree.c mathop_sse2.c mathop.c random.c sift.c siftmatcher.cpp 
 
+#Enables use of exceptions
 LOCAL_CPPFLAGS += -fexceptions
+
+#Enables use of the android logging library files
+LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
 
 include $(BUILD_SHARED_LIBRARY)
