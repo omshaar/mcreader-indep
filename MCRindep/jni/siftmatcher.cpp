@@ -57,29 +57,40 @@ extern "C" {
 	/////////////////////////////////////////////////////
 
 	//////////////////////buildForest////////////////////
-	void siftmatcher::buildForest(string* libraryNames)
+	void siftmatcher::buildForest(const double** descrArray, const int* descrSizes)
 	{
 		forest = vl_kdforest_new(DESCRIPTOR_DIMENSION, 1);
 		forest->thresholdingMethod = VL_KDTREE_MEDIAN;
-		processLibraryImages(libraryNames);		//Reads inputs from the files in libraryNames into libraryDescriptors
+		uploadAllDescriptors(descrArray, descrSizes);
 		vl_kdforest_build(forest, numLibraryDescriptors, libraryDescriptors);
 	}
 
-	
-	/////////////////processLibraryImages////////////////
-	void siftmatcher::processLibraryImages(string* libraryNames)
+	/////////////////uploadDescriptors////////////////
+	void siftmatcher::uploadAllDescriptors(const double** descrArray, const int* descrSizes)
 	{
 		int totalDescriptors = 0;
 		matchDelimeter[0] = 0;
 		for( int i=0; i<NUMTESTS; i++ )
 		{
-			totalDescriptors += readAllDescriptors( libraryDescriptors+totalDescriptors*DESCRIPTOR_DIMENSION, libraryNames[i]);		//Read the descriptors in from a file
+			totalDescriptors += descrSizes[i];
+			localizeDescriptor( libraryDescriptors+totalDescriptors*DESCRIPTOR_DIMENSION, descrArray[i], descrSizes[i] );		//Read the descriptors in from a file
 			matchDelimeter[i+1] = totalDescriptors;
 		}
 		numLibraryDescriptors = totalDescriptors;
 	}
 
 	/////////////////////////////////////////////////////
+	
+	void siftmatcher::localizeDescriptor( float* ResultDescript, const double* descr, int size )
+	{
+		for(int i = 0; i<size; i++)
+		{
+			for(int k = 0; k<DESCRIPTOR_DIMENSION; k++ )
+			{
+				ResultDescript[i*DESCRIPTOR_DIMENSION+k] = descr[i*DESCRIPTOR_DIMENSION+k];
+			}
+		}
+	}
 
 	/////////////////////findMatches/////////////////////
 	void siftmatcher::findMatches(int* matches)
@@ -120,8 +131,8 @@ void siftmatcher::normalize( float* descr, int numDescr )
 {
 	for ( int i=0; i < numDescr*DESCRIPTOR_DIMENSION; i++ )			//Normalize the values
 	{
-		float x = 512.0 * descr[i];
-		x = (x < 255.0) ? x : 255.0 ;
+		float x = 512.f * descr[i];
+		x = (x < 255.f) ? x : 255.0 ;
 		descr[i] = x;
 	}
 }
@@ -162,12 +173,24 @@ int siftmatcher::sift( float* d, float* pixels, Image I )				//returns the numbe
 }
 
 
-void siftmatcher::writeDescriptors( string* testNames)
+void siftmatcher::outputLibraryDescriptorsHeader( string* testNames)
 {
 	Image testIms[NUMTESTS];
 	vl_sift_pix* gray[NUMTESTS];
 	int counts[NUMTESTS];
 	float* libraryDescrs = new float[DESCRIPTOR_DIMENSION*MAXDESCRIPTORS];
+	string outputArrNames[NUMTESTS];
+	
+	//open the file
+	ofstream myfile;
+	myfile.open("descriptors.h");
+
+	//output the header file protector
+	string ifdefString = "SIFT_DESCRIPTORS_H";
+	myfile << "#ifndef "<< ifdefString << endl;
+	myfile << "#define "<< ifdefString << endl << endl;
+
+	//output the individual descriptor arrays
 	for( int i=0; i < NUMTESTS; i++ )
 	{
 		gray[i] =  initializeImage( testNames[i], testIms[i] );
@@ -177,42 +200,42 @@ void siftmatcher::writeDescriptors( string* testNames)
 		normalize(libraryDescrs, counts[i]);				//Normalize the values of the descriptors
 
 		string outFile = testNames[i];
-		outFile.resize(outFile.size()-3);
-		outFile += "txt";
-		outputDescriptors(libraryDescrs, outFile, counts[i] );
+		outFile.resize(outFile.size()-4);
+		outputArrNames[i] = "descr" + outFile;
+		outputSingleDescriptor(myfile, libraryDescrs, outputArrNames[i], counts[i] );
 	}
-}
+	myfile << endl << endl;
 
-void siftmatcher::outputDescriptors( float* Descript, string Filename, int size )
-{
-	ofstream myfile;
-	myfile.open (Filename.c_str());
-	myfile << size <<endl;
-	for(int i = 0; i<size*DESCRIPTOR_DIMENSION; i++)
-		myfile << Descript[i]<<endl;
+	//output the 2D descriptors data array
+	myfile << "const double* DescriptorsArray[] = {";
+	for( int i=0; i < NUMTESTS - 1; i++ )
+	{
+		myfile << outputArrNames[i] <<", ";
+	}
+	myfile << outputArrNames[NUMTESTS - 1] << " };" << endl << endl;
+
+	//output the number of each of descriptors for each image
+	myfile << "const int DESCRIPTOR_COUNTS[] = { ";
+	for( int i=0; i < NUMTESTS - 1; i++ )
+	{
+		myfile << counts[i] <<", ";
+	}
+	myfile << counts[NUMTESTS - 1] << " };" << endl << endl;
+
+	//output the endif
+	myfile << "#endif" << endl;
+
+	//close the file
 	myfile.close();
 }
 
-int siftmatcher::readAllDescriptors( float* Descript, string Filename )
+void siftmatcher::outputSingleDescriptor( ofstream &myfile, float* Descript, string arrName, int size )
 {
-	ifstream myfile;
-	myfile.open (Filename.c_str());
-	if(!myfile)
-	{
-		cerr<<"Could not open descriptor file"<<endl;
-		exit(1);
-	}
-	int size = 0;
-	myfile >> size;
-	for(int i = 0; i<size; i++)
-	{
-		for(int k = 0; k<DESCRIPTOR_DIMENSION; k++ )
-		{
-			float val;
-			myfile >> val;
-			Descript[i*DESCRIPTOR_DIMENSION+k] = val;
-		}
-	}
-	myfile.close();
-	return size;
+	myfile << "const double " << arrName << "[] = { ";
+
+	//output the descriptor data array
+	for(int i = 0; i < size*DESCRIPTOR_DIMENSION - 1 ; i++)
+		myfile << Descript[i]<<", ";
+	myfile << Descript[size*DESCRIPTOR_DIMENSION - 1] << " };" << endl;
+
 }

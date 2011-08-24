@@ -15,7 +15,7 @@ import android.view.SurfaceView;
 
 //Implements the preview of the camera before you take the picture
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
-	private static final String TAG = "Preview";
+	private static final String TAG = "MCR_PREVIEW_DEBUG";
 	public ProgressDialog dialog;
 	
     public SurfaceHolder mHolder;
@@ -29,7 +29,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         super(context);        
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
-        Log.d("PREVIEW", "Preview created");
+        Log.d(TAG, "Preview created");
         mHolder = getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -37,7 +37,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
     
     // Shows the dialog while waiting for image processing
     public void progressDialog () {
-    	Log.d("PREVIEW", "Starting the \"processing\" dialog.");
+    	Log.d(TAG, "Starting the \"processing\" dialog.");
     	mCamera.stopPreview();
     	dialog = ProgressDialog.show(this.getContext(), "Processing", "Please wait for image to process...", true);
     }
@@ -54,7 +54,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         // The Surface has been created, acquire the camera and tell it where
         // to draw.
-    	Log.d("PREVIEW", "surface created");
+    	Log.d(TAG, "surface created");
 
         mCamera = Camera.open();
         
@@ -70,7 +70,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
     		Camera.Parameters parameters = mCamera.getParameters();
     		if (parameters != null && parameters.getSupportedPreviewSizes() != null) {
 	            for (Size s : parameters.getSupportedPreviewSizes()) {
-	            	Log.d("PREVIEW Available Sizes", s.width + "x" + s.height);
+	            	Log.d(TAG, s.width + "x" + s.height);
 	            }
 	            
 	            //Hide the dialog since we will be starting camera preview
@@ -91,7 +91,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // Set up the camera parameters and begin the preview.
-    	Log.d("PREVIEW", "Surface changed");
+    	Log.d(TAG, "Surface changed");
     	Camera.Parameters parameters = mCamera.getParameters();
         
     	//getSupportedPreviewSizes and choose the one the fits our requirements
@@ -118,7 +118,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         // Surface will be destroyed when we return, so stop the preview.
         // Because the CameraDevice object is not a shared resource, it's very
         // important to release it when the activity is paused.
-    	Log.d("PREVIEW", "Preview surface destroyed, releasing camera.");
+    	Log.d(TAG, "Preview surface destroyed, releasing camera.");
     	
 		if( dialog != null )
 			dialog.dismiss();

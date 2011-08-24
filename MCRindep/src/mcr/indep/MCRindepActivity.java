@@ -38,7 +38,7 @@ import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 
 public class MCRindepActivity extends Activity {
-	private static final String TAG = "MCRActivity";
+	private static final String TAG = "MCR_ACTIVITY_DEBUG";
 	
 	public Preview preview; // previews video display and also contains a camera object
 	private MediaPlayer myMediaPlayer;
@@ -216,7 +216,7 @@ public class MCRindepActivity extends Activity {
 				public void onCompletion( MediaPlayer mp ) {
 					if( myMediaPlayer != null ) {
 						myMediaPlayer.release();
-						Log.d("MCRAudioDevice", "Releasing the MediaPlayer object.");
+						Log.d(TAG, "Releasing the MediaPlayer object.");
 					}
 				}				
 			});
@@ -227,7 +227,6 @@ public class MCRindepActivity extends Activity {
 		
 	}
 	
-    public native String  stringFromJNI();
 	public native int processCurrencyImage();
 	public native int initializeCurrencyReader();
 	
