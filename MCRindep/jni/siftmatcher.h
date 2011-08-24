@@ -5,6 +5,7 @@
 
 #include "Image.h"
 #include<string>
+#include<iostream>
 
 extern "C" {
 #include "generic.h"
@@ -20,20 +21,20 @@ public:
 	void processTestImage( string imageName );
 
 	//Build the kdforest and add the data into the forest
-	void buildForest(string* libraryNames);
+	void buildForest(const double** descrArray, const int* descrSizes);
 
 	//Finds all the descriptor matches between the test image and each of the library images
 	//matches is the output
 	void findMatches(int* matches);
 
 	/////INTERNAL USE ONLY/////
-	void processLibraryImages(string* libraryNames);
+	void uploadAllDescriptors(const double** descrArray, const int* descrSizes);
+	void localizeDescriptor( float* ResultDescript, const double* descr, int size );
 	void normalize( float* descr, int numDescr );
 	void convertToGrayscale(Image img, vl_sift_pix *gray );
 	int sift( float* d, float* pixels, Image I );
-	void writeDescriptors( string* testNames);
-	void outputDescriptors( float* Descript, string Filename, int size );
-	int readAllDescriptors( float* Descript, string Filename );
+	void outputLibraryDescriptorsHeader( string* testNames);
+	void outputSingleDescriptor( ofstream &myfile, float* Descript, string Filename, int size );
 	vl_sift_pix* initializeImage( string name, Image& image );
 
 private:
@@ -45,11 +46,6 @@ private:
 	int numTestDescriptors;
 	_VlKDForest* forest;
 };
-
-
-
-
-
 
 
 #endif
