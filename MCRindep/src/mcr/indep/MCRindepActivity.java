@@ -21,6 +21,12 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.highgui.Highgui;
 
 import android.app.Activity;
 import android.hardware.Camera;
@@ -52,8 +58,9 @@ public class MCRindepActivity extends Activity {
 		// this R.id stuff is in the main.xml file
 		// create the surface that the camera preview is on
 		if (preview == null) {
+			//Initialize the c++ code
+			//initializeCurrencyReader();
 			
-			//????????????????????
 			preview = new Preview(this);
 			((FrameLayout) findViewById(R.id.preview)).addView(preview);
 			
@@ -79,7 +86,8 @@ public class MCRindepActivity extends Activity {
 							preview.mCamera.setParameters(parameters);
 						}
 					}
-					preview.mCamera.takePicture(shutterCallback, rawCallback, jpegCallback);
+					
+					preview.mCamera.takePicture(shutterCallback, null, jpegCallback);
 					//preview.mCamera.takePicture(null, rawCallback, jpegCallback);
 				}
 			});
@@ -137,18 +145,12 @@ public class MCRindepActivity extends Activity {
 		}
 	};
 
-	/** Handles data for raw picture */
-	PictureCallback rawCallback = new PictureCallback() {
-		public void onPictureTaken(byte[] data, Camera camera) {
-			Log.d(TAG, "onPictureTaken - raw");
-		}
-	};
-
 	/** Handles data for jpeg picture */
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
 			/* sending image */
 			Log.d(TAG, "Running new thread");
+						
 			ProgressThread thread = new ProgressThread(data, handler);
 			thread.inProgress = true;
 			thread.start();
@@ -157,8 +159,6 @@ public class MCRindepActivity extends Activity {
 			//preview.refresh();
 		}
 	};
-	
-
 	
 	private void playAudio(int type) {
 		try {
@@ -227,7 +227,7 @@ public class MCRindepActivity extends Activity {
 		
 	}
 	
-	public native int processCurrencyImage();
+	public native int processCurrencyImage( byte[] data, int length );
 	public native int initializeCurrencyReader();
 	
 	private class ProgressThread extends Thread {
@@ -249,7 +249,8 @@ public class MCRindepActivity extends Activity {
 		    mp.start();
 				
 			// Start running image processing code
-			returnedNum = initializeCurrencyReader();
+		    initializeCurrencyReader();			//Should execute earlier in its own thread
+			returnedNum = processCurrencyImage( data, data.length );
 	
 			// Done running vision code
 		    mp.stop();
@@ -268,6 +269,44 @@ public class MCRindepActivity extends Activity {
                 
             inProgress = false;
 		}
+		
+		/*public byte[] convertJPEGtoPPM( byte[] jpeg) {
+			List<Byte> ppmList = new ArrayList<Byte>();
+			
+			Mat jpegMat = new Mat(1, jpeg.length, CvType.CV_8U);
+			jpegMat.put(0, 0, jpeg);
+			
+			
+			Mat raw = Highgui.imdecode(jpegMat, 1);
+
+			if( raw.empty() ) {
+				Log.d(TAG, "Failed to decode jpeg image!");
+				return null;
+			} else {
+				Log.d(TAG, "Decoded: " + raw.rows() + " x " + raw.cols() );
+			}
+			
+			//Will encode into ppm and automatically resize it appropriately
+			boolean ret = Highgui.imencode(".ppm", raw, ppmList);
+			
+			if( !ret ) {
+				Log.d(TAG, "Failed to encode into the PPM image!");
+				return null;
+			} 
+			if ( ppmList.isEmpty() ) {
+				Log.d(TAG, "Returned encoded Byte List is empty!");
+				return null;				
+			}
+			
+			//Really should get apache commons lang to convert in one line			
+			//Since ewe need to prmitive type
+			byte[] ppm = new byte[ppmList.size()];
+			for( int i=0; i < ppm.length; i++ ) {
+				ppm[i] = ppmList.get(i).byteValue();
+			}
+			return ppm;
+		}*/	
+		
 	}
 	
     static {

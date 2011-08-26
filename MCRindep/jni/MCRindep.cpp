@@ -7,10 +7,12 @@ using namespace std;
 #include<jni.h>
 #include<android_log.h>
 
-
 #include "siftmatcher.h"
 #include "globals.h"
 #include "descriptors.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #ifdef __cplusplus
 extern "C"
@@ -39,13 +41,35 @@ Java_mcr_indep_MCRindepActivity_initializeCurrencyReader( JNIEnv* env, jobject o
 }
 
 int
-Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
+Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj, jbyteArray jpeg, jint length )
 {
 	///////////////////main/////////////////////////////
-	string testImage = "test.ppm";
 
-	matcher->processTestImage( testImage );
+	LOGD("Converting test image into ppm format.");
 
+	//Decode the the jpeg image(could actually be an image of any format)
+	unsigned char* cjpeg;
+	cjpeg = (unsigned char*)env->GetByteArrayElements(jpeg,NULL);
+	Mat jpegMat = new Mat(1, length, CvType.CV_8U, cjpeg);
+	Mat raw = Highgui.imdecode(jpegMat, 1);
+
+	//Resize the image to 300 x 400
+	Mat raw_resized = new Mat()
+
+	//Encode the image into ppm
+	vector<unsigned char> vppm;
+	Highgui.imencode(".ppm", raw_resized, vppm);
+	unsigned char* ppm = new unsigned char[sizeof( int ) * myVector.size()];
+	memcpy( ppm, &cppm[0], sizeof( int ) * vppm.size() );
+
+	//Process the converted ppm
+	LOGD("Processing the converted test image.");
+	matcher->processTestImage( cdata );
+
+	//The data has been copied within the matcher... release the ByteArray
+	env->ReleaseByteArrayElements(data,(jbyte*)cdata,0);
+
+	LOGD("Finding the matches.");
 	int matches[NUMTESTS];
 	matcher->findMatches(matches);
 	int maxIndex = 0;
@@ -57,17 +81,18 @@ Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj )
 		}
 	}
 	string img = libPicNames[maxIndex];
-	cout<< "Found " << matches[maxIndex] << " between testImage: "
-		<< testImage << " and libImage: " << img << endl;
-				
+
 	//Remove the image we just processed
 	//command = "DEL " + testImageDirectory + testImage;
 	//system(command.c_str());
 
-
+	delete ppm;
 	delete matcher;
 	int result = matchIndexToBill( maxIndex );
-	return result;
+	if( matches[maxIndex] == 0 )
+		return -1;
+	else
+		return result;
 }
 
 string findFirstName( string Filename )

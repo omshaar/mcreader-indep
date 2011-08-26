@@ -19,6 +19,7 @@ public:
 	~siftmatcher();
 
 	void processTestImage( string imageName );
+	void processTestImage( char* data );
 
 	//Build the kdforest and add the data into the forest
 	void buildForest(const double** descrArray, const int* descrSizes);
@@ -36,6 +37,7 @@ public:
 	void outputLibraryDescriptorsHeader( string* testNames);
 	void outputSingleDescriptor( ofstream &myfile, float* Descript, string Filename, int size );
 	vl_sift_pix* initializeImage( string name, Image& image );
+	vl_sift_pix* initializeImage( char* data, Image& image );
 
 private:
 	string inputFileNames[NUMTESTS];
