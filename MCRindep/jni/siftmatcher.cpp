@@ -21,6 +21,7 @@ extern "C" {
 #include "Exception.h"
 
 #include "siftmatcher.h"
+#include "android_log.h"
 
 
 	////////////////Constructor/////////////////////
@@ -50,6 +51,17 @@ extern "C" {
 	{
 		Image testI;
 		vl_sift_pix* testGray = initializeImage( imageName, testI );			//Initialize the first image
+		numTestDescriptors = sift(testDescriptors, testGray, testI);				//sift and store the descriptors in testDescr, and return the # of descriptors
+		normalize(testDescriptors, numTestDescriptors);				//normalize the descriptor values
+	}
+
+	void siftmatcher::processTestImage( char* data )
+	{
+		Image testI;
+		vl_sift_pix* testGray = initializeImage( data, testI );			//Initialize the first image
+
+		LOGD("Initialized image dimensions: %i x %i", testI.getWidth(), testI.getWidth());
+
 		numTestDescriptors = sift(testDescriptors, testGray, testI);				//sift and store the descriptors in testDescr, and return the # of descriptors
 		normalize(testDescriptors, numTestDescriptors);				//normalize the descriptor values
 	}
@@ -118,6 +130,18 @@ extern "C" {
 vl_sift_pix* siftmatcher::initializeImage( string name, Image& image )
 {
 	ifstream ifs(name.c_str(), ios_base::in | ios_base::binary) ;
+    if(!ifs) {
+      throw Exception("Could not open a file") ;
+    }
+	ifs>>image;
+	vl_sift_pix* gray = new vl_sift_pix[image.getHeight()*image.getWidth()];
+	convertToGrayscale(image, gray );
+	return gray;
+}
+
+vl_sift_pix* siftmatcher::initializeImage( char* data, Image& image )
+{
+	ifstream ifs(data, ios_base::in | ios_base::binary) ;
     if(!ifs) {
       throw Exception("Could not open a file") ;
     }

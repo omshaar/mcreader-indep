@@ -16,6 +16,15 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
+#For OpenCV
+include ../includeOpenCV.mk
+ifeq ("$(wildcard $(OPENCV_MK_PATH))","")
+	#try to load OpenCV.mk from default install location
+	include $(TOOLCHAIN_PREBUILT_ROOT)/user/share/OpenCV/OpenCV.mk
+else
+	include $(OPENCV_MK_PATH)
+endif
+
 LOCAL_MODULE    := MCRindep
 LOCAL_SRC_FILES := MCRindep.cpp DisplayMatcher.cpp generic.c heap.c host.c Image.cpp imop.c kdtree.c mathop_sse2.c mathop.c random.c sift.c siftmatcher.cpp 
 
@@ -24,5 +33,8 @@ LOCAL_CPPFLAGS += -fexceptions
 
 #Enables use of the android logging library files
 LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
+
+#Forces to compile to this platform to allow compatability with OpenCV
+TARGET_ARCH_ABI := armeabi-v7a
 
 include $(BUILD_SHARED_LIBRARY)
