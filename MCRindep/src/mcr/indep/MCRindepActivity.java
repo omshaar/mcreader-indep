@@ -24,10 +24,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.highgui.Highgui;
-
 import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
@@ -240,7 +236,7 @@ public class MCRindepActivity extends Activity {
 		}
 		public void run() {
 		
-			Log.d(TAG, "START IMAGE PROCESSING!!!");
+
 			int returnedNum;
 		        
 			// loop waiting sound while waiting for response from server
@@ -249,7 +245,10 @@ public class MCRindepActivity extends Activity {
 		    mp.start();
 				
 			// Start running image processing code
+			Log.d(TAG, "Initializing JNI Code.");
 		    initializeCurrencyReader();			//Should execute earlier in its own thread
+		    
+			Log.d(TAG, "START IMAGE PROCESSING!!!");
 			returnedNum = processCurrencyImage( data, data.length );
 	
 			// Done running vision code

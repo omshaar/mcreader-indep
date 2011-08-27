@@ -8,6 +8,10 @@
 #include"Exception.h"
 
 #include<iostream>
+#include <sstream>
+#include <string>
+#include<iostream>
+using namespace std;
 
 extern "C" {
 #include<assert.h>
@@ -62,11 +66,14 @@ private:
   int height ;
 
   friend std::istream& operator>>(std::istream& is, Image& I) ; 
+  friend std::stringstream& operator>>(stringstream& is, Image& I) ;
 } ;
 
 std::ostream& operator<<(std::ostream& os, Image::PixelType type) ;
 std::ostream& operator<<(std::ostream& os, const Image& I) ;
 std::istream& operator>>(std::istream& is, Image& I) ; 
+
+stringstream& operator>>(stringstream& is, Image& I) ;
 
 /* --------------------------------------------------------------------
  *                                                       Inline members
