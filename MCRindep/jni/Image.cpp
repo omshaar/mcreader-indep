@@ -250,6 +250,160 @@ ostream& operator<<(ostream& os, const Image& I)
 }
 
 
+
+/*****************************************MY CODE *********************/
+
+stringstream&
+operator>>(stringstream& is, const _pnmws&)
+{
+  char c ;
+  bool stop = false ;
+  while(!stop) {
+
+    switch(c = is.get()) {
+
+    case ' ' : case '\t' :
+    case '\n' : case '\r' :
+      // Drop this whitespace
+      break ;
+
+    case '#' :
+      // Remove the comment
+      {
+        bool stopcomment = false ;
+        while(!stopcomment) {
+          switch(c = is.get()) {
+          case '\r' : case '\n' : case EOF :
+            // The comment terminates here
+            stopcomment = true ;
+            break ;
+
+          default:
+            break ;
+          }
+        }
+      }
+      break ;
+
+    default:
+      // The character is not a whitespace: put it back.
+      is.putback(c) ;
+    case EOF:
+      stop = true ;
+      break ;
+    }
+  }
+  return is ;
+}
+
+
+stringstream& operator>>(stringstream& is, Image& I)
+{
+  if(I.pt) {
+    delete [] I.pt ;
+    I.width = 0 ;
+    I.height = 0 ;
+  }
+
+  // Accroding to the specification, the first character has to be 'P'
+  if(is.get() != 'P') {
+    throw ImageException("The file does not seem to be in PNM format.") ;
+  }
+
+  // The second character specifies the version of the file
+  int v ;
+  is>>v ;
+  if(!is) {
+    throw ImageException("The file does not seem to be in PNM format.") ;
+  }
+
+  // There are four format supported: PGM ASCII/BINARY and PPM ASCII/BINARY.
+  // According to the file type, a grayscale or color image is created.
+  switch(v) {
+  case 2: case 5:
+    // PGM Format
+    I.type = Image::L ;
+    break ;
+
+  case 3: case 6:
+    // PPM Format
+    I.type = Image::RGB ;
+    break ;
+
+  case 1: case 4:
+    throw ImageException("PBM format not supported") ;
+
+  default:
+    throw ImageException("The file does not seem to be in PPM/PGM format.") ;
+  }
+
+  // The next three fields are: width, height and maximum pixel value
+  int maxval ;
+  is>>pnmws>>I.width ;
+  is>>pnmws>>I.height ;
+  is>>pnmws>>maxval ;
+
+  if(!is) {
+    throw ImageException("The PNM file seems to be corrupted.") ;
+  }
+
+  // Now we are ready to read the data
+  I.pt = new unsigned char [I.getDataSize()] ;
+
+  if (v != 5 && v != 6)
+    // ASCII types may have comments and whitespace
+    is>>pnmws ;
+  else {
+    // Binary types may have only a newline before the data
+    // blob.
+    unsigned char ch = is.get() ;
+    if (ch != 10 && ch != 13)
+      is.putback(ch);
+  }
+
+  int number ;
+  float scale = 256.0f / maxval ;
+
+  for(int y = I.height-1 ; y >= 0 ; --y) {
+    for(int x = 0 ; x <  I.width ; ++x) {
+      unsigned char* pt = I.getPixelPt(x,y) ;
+      switch(v) {
+      case 5 :
+        // Binary-encoded PGM
+        *pt = is.get() ;
+        break ;
+
+      case 6 :
+        // Binary-encoded PPM
+        *pt++ = is.get() ;
+        *pt++ = is.get() ;
+        *pt   = is.get() ;
+        break ;
+
+      case 2 :
+        // ASCII-encoded PGM
+        is>>number ;
+        *pt = (unsigned char)( number *  scale ) ;
+        break ;
+
+      case 3:
+        // ASCII-encoded PPM
+        is>>number ; *pt++ = (unsigned char)( number *  scale ) ;
+        is>>number ; *pt++ = (unsigned char)( number *  scale ) ;
+        is>>number ; *pt   = (unsigned char)( number *  scale ) ;
+        break ;
+      }
+    }
+  }
+  return is ;
+}
+
+
+/********************************END MY CODE****************************/
+
+
+
+
 /** @brief Constructs an empty image.
  **/
 Image::Image() 

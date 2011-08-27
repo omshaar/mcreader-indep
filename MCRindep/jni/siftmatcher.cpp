@@ -55,12 +55,12 @@ extern "C" {
 		normalize(testDescriptors, numTestDescriptors);				//normalize the descriptor values
 	}
 
-	void siftmatcher::processTestImage( char* data )
+	void siftmatcher::processTestImage( unsigned char* data )
 	{
 		Image testI;
 		vl_sift_pix* testGray = initializeImage( data, testI );			//Initialize the first image
 
-		LOGD("Initialized image dimensions: %i x %i", testI.getWidth(), testI.getWidth());
+		LOGD("Initialized image dims: %i x %i", testI.getHeight(), testI.getWidth());
 
 		numTestDescriptors = sift(testDescriptors, testGray, testI);				//sift and store the descriptors in testDescr, and return the # of descriptors
 		normalize(testDescriptors, numTestDescriptors);				//normalize the descriptor values
@@ -139,18 +139,15 @@ vl_sift_pix* siftmatcher::initializeImage( string name, Image& image )
 	return gray;
 }
 
-vl_sift_pix* siftmatcher::initializeImage( char* data, Image& image )
+vl_sift_pix* siftmatcher::initializeImage( unsigned char* data, Image& image )
 {
-	ifstream ifs(data, ios_base::in | ios_base::binary) ;
-    if(!ifs) {
-      throw Exception("Could not open a file") ;
-    }
-	ifs>>image;
+	stringstream sstr((const char*)data, ios_base::in | ios_base::binary) ;
+
+	sstr>>image;
 	vl_sift_pix* gray = new vl_sift_pix[image.getHeight()*image.getWidth()];
 	convertToGrayscale(image, gray );
 	return gray;
 }
-
 void siftmatcher::normalize( float* descr, int numDescr )
 {
 	for ( int i=0; i < numDescr*DESCRIPTOR_DIMENSION; i++ )			//Normalize the values

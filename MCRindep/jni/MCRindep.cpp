@@ -12,7 +12,10 @@ using namespace std;
 #include "descriptors.h"
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+using namespace cv;
 
 #ifdef __cplusplus
 extern "C"
@@ -43,48 +46,53 @@ Java_mcr_indep_MCRindepActivity_initializeCurrencyReader( JNIEnv* env, jobject o
 int
 Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj, jbyteArray jpeg, jint length )
 {
-	///////////////////main/////////////////////////////
-
 	LOGD("Converting test image into ppm format.");
 
 	//Decode the the jpeg image(could actually be an image of any format)
 	unsigned char* cjpeg;
 	cjpeg = (unsigned char*)env->GetByteArrayElements(jpeg,NULL);
-	Mat jpegMat = new Mat(1, length, CvType.CV_8U, cjpeg);
-	Mat raw = Highgui.imdecode(jpegMat, 1);
+	Mat jpegMat(1, length, CV_8U, cjpeg);
+	Mat raw = imdecode(jpegMat, 1);
+	LOGD("Decoded: %i x %i", raw.rows, raw.cols );
 
 	//Resize the image to 300 x 400
-	Mat raw_resized = new Mat()
+	//Size newDims(300,400);
+	Size newDims;
+	newDims.width = 400;
+	newDims.height = 300;
+	Mat raw_resized(1, newDims.width * newDims.height, CV_8U);
+	resize( raw, raw_resized, newDims);
+	if( raw_resized.empty() )
+		LOGD("Raw Resized image is empty!");
+	else
+		LOGD("Decoded + Resized: %i x %i", raw_resized.rows, raw_resized.cols );
 
 	//Encode the image into ppm
 	vector<unsigned char> vppm;
-	Highgui.imencode(".ppm", raw_resized, vppm);
-	unsigned char* ppm = new unsigned char[sizeof( int ) * myVector.size()];
-	memcpy( ppm, &cppm[0], sizeof( int ) * vppm.size() );
+	imencode(".ppm", raw_resized, vppm);
+	unsigned char* ppm = new unsigned char[sizeof( int ) * vppm.size()];
+	memcpy( ppm, &vppm[0], sizeof( int ) * vppm.size() );
 
 	//Process the converted ppm
 	LOGD("Processing the converted test image.");
-	matcher->processTestImage( cdata );
+	matcher->processTestImage( ppm );
 
 	//The data has been copied within the matcher... release the ByteArray
-	env->ReleaseByteArrayElements(data,(jbyte*)cdata,0);
+	env->ReleaseByteArrayElements(jpeg,(jbyte*)cjpeg,0);
 
 	LOGD("Finding the matches.");
 	int matches[NUMTESTS];
 	matcher->findMatches(matches);
 	int maxIndex = 0;
+	LOGD("%i matches to library image %i.", matches[0], 0);
 	for( int i=1; i<NUMTESTS; i++)
 	{
+		LOGD("%i matches to library image %i.", matches[i], i);
 		if( matches[i] > matches[maxIndex] )
 		{
 			maxIndex = i;
 		}
 	}
-	string img = libPicNames[maxIndex];
-
-	//Remove the image we just processed
-	//command = "DEL " + testImageDirectory + testImage;
-	//system(command.c_str());
 
 	delete ppm;
 	delete matcher;
@@ -95,20 +103,15 @@ Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj, 
 		return result;
 }
 
-string findFirstName( string Filename )
+void
+Java_mcr_indep_MCRindepActivity_shutDownCurrencyReader( JNIEnv* env, jobject obj )
 {
-	ifstream myfile;
-	myfile.open (Filename.c_str());
-	if(!myfile)
-	{
-		cerr<<"Could not open picture list file."<<endl;
-		return "";
-	}
-	string first;
-	myfile >> first;
-	myfile.close();
-	return first;
+	LOGD("Deallocating currency reader resources.");
+
+	delete matcher;
+
 }
+
 
 int matchIndexToBill( int index )
 {
