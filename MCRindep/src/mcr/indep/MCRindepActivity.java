@@ -37,6 +37,8 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 public class MCRindepActivity extends Activity {
@@ -50,6 +52,11 @@ public class MCRindepActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		//Hide the title window
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 		
 		// this R.id stuff is in the main.xml file
 		// create the surface that the camera preview is on
