@@ -84,8 +84,8 @@ extern "C" {
 		matchDelimeter[0] = 0;
 		for( int i=0; i<NUMTESTS; i++ )
 		{
-			totalDescriptors += descrSizes[i];
 			localizeDescriptor( libraryDescriptors+totalDescriptors*DESCRIPTOR_DIMENSION, descrArray[i], descrSizes[i] );		//Read the descriptors in from a file
+			totalDescriptors += descrSizes[i];
 			matchDelimeter[i+1] = totalDescriptors;
 		}
 		numLibraryDescriptors = totalDescriptors;
