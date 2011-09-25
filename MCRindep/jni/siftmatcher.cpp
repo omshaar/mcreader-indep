@@ -114,13 +114,24 @@ extern "C" {
 			matches[i] = 0;
 		for( int i=0; i<numTestDescriptors; i++ )
 		{
-			vl_kdforest_query(forest, neighbors, 1, testDescriptors+i*DESCRIPTOR_DIMENSION);
-			if( (neighbors)->distance < THRESHOLD)
+			vl_kdforest_query(forest, neighbors, NUM_CLOSEST_NEIGHBORS, testDescriptors+i*DESCRIPTOR_DIMENSION);
+			int numNeighborsMatched = 0;
+			for( int k=0; k<NUM_CLOSEST_NEIGHBORS; k++)		//If descriptor matched too many neighbors(libImages), ignore it
 			{
-				//neighborMatches[matches] = *(neighbors+i);
-				for( int i=0; i<NUMTESTS; i++ )
-					if( neighbors->index >= matchDelimeter[i] && neighbors->index < matchDelimeter[i+1] )
-						matches[i]++;
+				if( neighbors[k].distance < THRESHOLD)
+					numNeighborsMatched++;
+			}
+			if( numNeighborsMatched < NUM_CLOSEST_NEIGHBORS )
+			{
+				for( int k=0; k<NUM_CLOSEST_NEIGHBORS; k++){
+					if( neighbors[k].distance < THRESHOLD)
+					{
+						//neighborMatches[matches] = *(neighbors+i);
+						for( int j=0; j<NUMTESTS; j++ )
+							if(neighbors[k].index >= matchDelimeter[j] && neighbors[k].index < matchDelimeter[j+1] )	//Find out which lib image the match descriptor belonged to
+								matches[j]++;
+					}
+				}
 			}
 		}
 		delete [] neighbors;

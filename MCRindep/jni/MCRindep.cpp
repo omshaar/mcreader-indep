@@ -61,7 +61,7 @@ Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj, 
 	newDims.width = 400;
 	newDims.height = 300;
 	Mat raw_resized(1, newDims.width * newDims.height, CV_8U);
-	resize( raw, raw_resized, newDims);
+	resize( raw, raw_resized, newDims,CV_INTER_AREA);
 	if( raw_resized.empty() )
 		LOGD("Raw Resized image is empty!");
 	else
