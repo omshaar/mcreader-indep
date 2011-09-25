@@ -54,8 +54,8 @@ public class MCRindepActivity extends Activity {
 		setContentView(R.layout.main);
 		
 		//Hide the title window
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		
 		// this R.id stuff is in the main.xml file
