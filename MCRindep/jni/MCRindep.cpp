@@ -69,9 +69,12 @@ Java_mcr_indep_MCRindepActivity_processCurrencyImage( JNIEnv* env, jobject obj, 
 
 	//Encode the image into ppm
 	vector<unsigned char> vppm;
+	LOGD("Converting into ppm for siftmatcher input.");
 	imencode(".ppm", raw_resized, vppm);
+	LOGD("Blahhhh encoded.");
 	unsigned char* ppm = new unsigned char[sizeof( int ) * vppm.size()];
-	memcpy( ppm, &vppm[0], sizeof( int ) * vppm.size() );
+	LOGD("Blahhhh blahdhhhdhadg encoded.");
+	memcpy( ppm, &vppm[0], sizeof( int ) * vppm.size() );	//Crashing here on second image!!!!!!!!!!!!!
 
 	//Process the converted ppm
 	LOGD("Processing the converted test image.");
