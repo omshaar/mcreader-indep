@@ -51,12 +51,12 @@ public class MCRindepActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
 		
-		//Hide the title window
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+		//Hide the title window, must be done before setting the layout
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);		//hides status bar
+		
+		setContentView(R.layout.main);
 		
 		// this R.id stuff is in the main.xml file
 		// create the surface that the camera preview is on
@@ -66,6 +66,10 @@ public class MCRindepActivity extends Activity {
 			
 			preview = new Preview(this);
 			((FrameLayout) findViewById(R.id.preview)).addView(preview);
+			
+			// Start running image processing code
+			Log.d(TAG, "Initializing JNI Code.");
+			initializeCurrencyReader();			//Should execute earlier in its own thread
 			
 			preview.setOnClickListener( new OnClickListener() {
 				// takes picture when the screen is touched/clicked
@@ -251,10 +255,6 @@ public class MCRindepActivity extends Activity {
 		    mp.setLooping(true);
 		    mp.start();
 				
-			// Start running image processing code
-			Log.d(TAG, "Initializing JNI Code.");
-		    initializeCurrencyReader();			//Should execute earlier in its own thread
-		    
 			Log.d(TAG, "START IMAGE PROCESSING!!!");
 			returnedNum = processCurrencyImage( data, data.length );
 	
