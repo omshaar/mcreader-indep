@@ -8,12 +8,11 @@ If you want to just run the application without diving into and building from th
 
 It is possible to install APK files without utilizing the Android Market, although the process is more difficult and complex. To avoid the Android Market, you need to use Android SDK.
 
-    Download and install the Google Android SDK program and the Android USB drivers. The download links are as follows: http://code.google.com/android/intro/installing.html
-    http://dl.google.com/android/android_usb_windows.zip
-    You need to modify your Android’s settings to allow the installation of applications from other sources. Under “Settings,” select “Application Settings” and then enable “Unknown Sources.” Also under “Settings,” select “SD Card” and “Phone Storage,” and finally enable “Disable Use for USB Storage”
-    This last step is easy. Open Command Prompt and type the following: adb install <1>/<2>.apk
-    However, when you type the command, replace <1> with the path to your APK file and replace <2> with the name of the APK file.
-    You’re done! Your application is now ready for your use and enjoyment.
+1. Download and install the Google Android SDK program and the Android USB drivers. The download links are as follows: http://code.google.com/android/intro/installing.html
+2. You need to modify your Android’s settings to allow the installation of applications from other sources. Under “Settings,” select “Application Settings” and then enable “Unknown Sources.” 
+3. Also under “Settings,” select “SD Card” and “Phone Storage,” and finally enable “Disable Use for USB Storage”
+4. This last step is easy. Open Command Prompt and type the following: adb install FULLPATH.apk where FULLPATH is the full path of the APK file.
+5. You’re done! Your application is now ready for your use and enjoyment.
 
 I got the following instructions from talkandroid:
 http://www.talkandroid.com/guides/install-apk-files-on-android/
