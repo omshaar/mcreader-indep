@@ -14,7 +14,8 @@ It is possible to install APK files without utilizing the Android Market, althou
 
 3. Also under “Settings,” select “SD Card” and “Phone Storage,” and finally enable “Disable Use for USB Storage”
 
-4. This last step is easy. Open Command Prompt and type the following: adb install FULLPATH.apk where FULLPATH is the full path of the APK file.
+4. This last step is easy. Open Command Prompt and type the following: adb install MCRindep.apk
+Make sure that the directory where the adb executable is located is included in your $PATH variable.
 
 5. You’re done! Your application is now ready for your use and enjoyment.
 
