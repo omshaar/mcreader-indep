@@ -1,0 +1,21 @@
+# Introduction #
+
+If you want to just run the application without diving into and building from the source code, this page is for you. I understand it is difficult to set up a development environment just to build code and not see it run. That's why I've included the apk in the Downloads section so you can install it using the directions below. The latest cutting edge version of the apk should also be included in the source code.
+
+# Details #
+
+It is possible to install APK files without utilizing the Android Market, although the process is more difficult and complex. To avoid the Android Market, you need to use Android SDK.
+
+1. Download and install the Google Android SDK program and the Android USB drivers. The download links are as follows: http://code.google.com/android/intro/installing.html
+
+2. You need to modify your Android’s settings to allow the installation of applications from other sources. Under “Settings,” select “Application Settings” and then enable “Unknown Sources.”
+
+3. Also under “Settings,” select “SD Card” and “Phone Storage,” and finally enable “Disable Use for USB Storage”
+
+4. This last step is easy. Open Command Prompt and type the following: adb install MCRindep.apk
+Make sure that the directory where the adb executable is located is included in your $PATH variable.
+
+5. You’re done! Your application is now ready for your use and enjoyment.
+
+I got the following instructions from talkandroid:
+http://www.talkandroid.com/guides/install-apk-files-on-android/
